@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>AI WasteWise - Result</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7f6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 38px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .result-card {
+            background: white;
+            padding: 30px;
+            margin-top: 25px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .waste-type {
+            font-size: 34px;
+            font-weight: bold;
+            text-transform: capitalize;
+            margin: 15px 0 8px;
+        }
+
+        .confidence {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-top: 18px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .card ul {
+            text-align: left;
+            line-height: 1.7;
+        }
+
+        .card p {
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .important {
+            border-left: 5px solid #555;
+        }
+
+
+        /* -------------------------
+           AI CHAT
+        ------------------------- */
+
+        .chat-card {
+            background: white;
+            padding: 25px;
+            margin-top: 25px;
+            border-radius: 14px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .chat-card h2 {
+            margin-top: 0;
+        }
+
+        .chat-subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        #chatMessages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background: #fafafa;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            padding: 10px 14px;
+            margin: 8px 0;
+            border-radius: 10px;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            background: #e8f5e9;
+            text-align: right;
+        }
+
+        .bot-message {
+            background: #eeeeee;
+            text-align: left;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: 13px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #sendButton {
+            padding: 12px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #sendButton:hover {
+            background: #555;
+        }
+
+
+        .back {
+            display: block;
+            width: fit-content;
+            margin: 30px auto 0;
+            padding: 12px 25px;
+            background: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        .back:hover {
+            background: #555;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <div class="header">
+
+        <h1>♻️ AI WasteWise</h1>
+
+        <p>
+            Smart Waste Identification & Disposal Assistant
+        </p>
+
+    </div>
+
+
+    <!-- Prediction -->
+
+    <div class="result-card">
+
+        <div>🤖 Waste Detected</div>
+
+        <div class="waste-type">
+            {{ predicted_class }}
+        </div>
+
+        <div class="confidence">
+
+            Confidence:
+            <strong>{{ confidence }}%</strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- Before Recycling -->
+
+    <div class="card">
+
+        <h2>♻️ Before Recycling</h2>
+
+        <ul>
+
+            {% for item in sections.before_recycling %}
+
+            <li>{{ item }}</li>
+
+            {% endfor %}
+
+        </ul>
+
+    </div>
+
+
+    <!-- Reuse -->
+
+    <div class="card">
+
+        <h2>💡 Reuse Ideas</h2>
+
+        <ul>
+
+            {% for item in sections.reuse_ideas %}
+
+            <li>{{ item }}</li>
+
+            {% endfor %}
+
+        </ul>
+
+    </div>
+
+
+    <!-- Disposal -->
+
+    <div class="card">
+
+        <h2>🗑️ Disposal Guidance</h2>
+
+        <p>
+            {{ sections.disposal_guidance }}
+        </p>
+
+    </div>
+
+
+    <!-- Important Note -->
+
+    <div class="card important">
+
+        <h2>⚠️ Important Note</h2>
+
+        <p>
+            {{ sections.important_note }}
+        </p>
+
+    </div>
+
+
+    <!-- =========================
+         AI CHAT BOX
+    ========================== -->
+
+    <div class="chat-card">
+
+        <h2>💬 Ask AI WasteWise</h2>
+
+        <p class="chat-subtitle">
+
+            Ask anything about your detected
+            <strong>{{ predicted_class }}</strong> waste.
+
+        </p>
+
+
+        <div id="chatMessages">
+
+            <div class="message bot-message">
+
+                👋 Hi! I can help you with this
+                {{ predicted_class }} waste.
+
+                You can ask me about recycling,
+                reuse, or disposal.
+
+            </div>
+
+        </div>
+
+
+        <div class="chat-input-area">
+
+            <input
+                type="text"
+                id="questionInput"
+                placeholder="Ask a question..."
+                onkeydown="handleEnter(event)"
+            >
+
+            <button
+                id="sendButton"
+                onclick="sendQuestion()"
+            >
+                Send
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <a href="/" class="back">
+
+        🔄 Scan Another Item
+
+    </a>
+
+
+</div>
+
+
+<script>
+
+const wasteType = "{{ predicted_class }}";
+
+
+function handleEnter(event) {
+
+    if (event.key === "Enter") {
+
+        sendQuestion();
+
+    }
+
+}
+
+
+function addMessage(text, type) {
+
+    const chatMessages =
+        document.getElementById("chatMessages");
+
+    const message =
+        document.createElement("div");
+
+    message.classList.add(
+        "message",
+        type === "user"
+            ? "user-message"
+            : "bot-message"
+    );
+
+    message.textContent = text;
+
+    chatMessages.appendChild(message);
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+
+}
+
+
+async function sendQuestion() {
+
+    const input =
+        document.getElementById("questionInput");
+
+    const question =
+        input.value.trim();
+
+
+    if (!question) {
+
+        return;
+
+    }
+
+
+    // Show user message
+
+    addMessage(
+        question,
+        "user"
+    );
+
+
+    input.value = "";
+
+
+    // Show temporary message
+
+    addMessage(
+        "🤔 Let me check my waste knowledge...",
+        "bot"
+    );
+
+
+    try {
+
+        const response = await fetch(
+            "/chat",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    question: question,
+
+                    waste_type: wasteType
+
+                })
+
+            }
+        );
+
+
+        const data =
+            await response.json();
+
+
+        // Remove temporary message
+
+        const messages =
+            document.getElementById(
+                "chatMessages"
+            );
+
+        messages.removeChild(
+            messages.lastElementChild
+        );
+
+
+        // Show AI answer
+
+        // Show AI answer
+
+        addMessage(
+            "🤖 AI WasteWise\n\n" + data.answer,
+            "bot"
+        );
+
+        addMessage(
+            "📚 RAG Source: " + data.source,
+            "bot"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        const messages =
+            document.getElementById(
+                "chatMessages"
+            );
+
+        messages.removeChild(
+            messages.lastElementChild
+        );
+
+
+        addMessage(
+            "Sorry, something went wrong. Please try again.",
+            "bot"
+        );
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>

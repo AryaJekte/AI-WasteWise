@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI WasteWise</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f4f7f6;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 40px;
+        }
+
+        .container {
+            background: white;
+            max-width: 600px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        input {
+            margin: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+        }
+
+        video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        #cameraSection {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>♻️ AI WasteWise</h1>
+
+    <p>
+        Smart Waste Identification & Disposal Assistant
+    </p>
+
+    <hr>
+
+    <h2>📷 Scan Waste</h2>
+
+    <button onclick="openCamera()">
+        Open Camera
+    </button>
+
+    <div id="cameraSection">
+
+        <video id="video" autoplay></video>
+
+        <br>
+
+        <button onclick="captureImage()">
+            📸 Capture
+        </button>
+
+        <canvas id="canvas" style="display:none;"></canvas>
+
+    </div>
+
+    <hr>
+
+    <h3>Or upload an image</h3>
+
+    <form action="/predict" method="POST" enctype="multipart/form-data">
+
+        <input
+            type="file"
+            name="image"
+            accept="image/*"
+            capture="environment"
+            required
+        >
+
+        <br>
+
+        <button type="submit">
+            🔍 Analyze Waste
+        </button>
+
+    </form>
+
+</div>
+
+
+<script>
+
+let video = document.getElementById("video");
+let cameraSection = document.getElementById("cameraSection");
+let stream;
+
+
+async function openCamera() {
+
+    try {
+
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+        });
+
+        video.srcObject = stream;
+
+        cameraSection.style.display = "block";
+
+    } catch (error) {
+
+        alert("Unable to access camera: " + error);
+
+    }
+}
+
+
+function captureImage() {
+
+    let canvas = document.getElementById("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    let context = canvas.getContext("2d");
+
+    context.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    canvas.toBlob(function(blob) {
+
+        let formData = new FormData();
+
+        formData.append(
+            "image",
+            blob,
+            "camera_capture.jpg"
+        );
+
+        fetch("/predict", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+
+            document.open();
+            document.write(html);
+            document.close();
+
+        });
+
+    }, "image/jpeg");
+
+}
+
+</script>
+
+</body>
+</html>
